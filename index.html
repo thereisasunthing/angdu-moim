@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#B0273A">
+<meta name="theme-color" content="#B2243A">
 <title>앵두모임</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon-192.png">
@@ -14,28 +14,51 @@
 <!-- ================= 홈 화면 ================= -->
 <section id="screen-home" class="screen active">
   <header class="home-header">
+    <img class="home-logo" src="icons/icon-192.png" alt="앵두모임 로고">
     <h1 class="app-title">앵두모임</h1>
     <p class="app-sub">2026년 7월 ~ 2027년 6월</p>
+    <p class="app-welcome">반갑습니다. 아래 메뉴를 크게 한 번 눌러주세요.</p>
   </header>
 
-  <nav class="home-menu">
+  <nav class="home-menu" aria-label="주요 메뉴">
     <button class="menu-btn" data-target="screen-payment">
-      <span class="menu-icon">💰</span>
-      <span class="menu-label">납부관리</span>
+      <span class="menu-icon" aria-hidden="true">💰</span>
+      <span class="menu-label">
+        <strong>납부관리</strong>
+        <small>회원별 회비 납부 확인</small>
+      </span>
+      <span class="menu-arrow" aria-hidden="true">›</span>
     </button>
+
     <button class="menu-btn" data-target="screen-ledger">
-      <span class="menu-icon">📒</span>
-      <span class="menu-label">장부</span>
+      <span class="menu-icon" aria-hidden="true">📒</span>
+      <span class="menu-label">
+        <strong>장부</strong>
+        <small>입금과 출금 내역 기록</small>
+      </span>
+      <span class="menu-arrow" aria-hidden="true">›</span>
     </button>
+
     <button class="menu-btn" data-target="screen-summary">
-      <span class="menu-icon">📊</span>
-      <span class="menu-label">결산</span>
+      <span class="menu-icon" aria-hidden="true">📊</span>
+      <span class="menu-label">
+        <strong>결산</strong>
+        <small>잔액과 납부 현황 확인</small>
+      </span>
+      <span class="menu-arrow" aria-hidden="true">›</span>
     </button>
+
     <button class="menu-btn" data-target="screen-backup">
-      <span class="menu-icon">💾</span>
-      <span class="menu-label">백업</span>
+      <span class="menu-icon" aria-hidden="true">💾</span>
+      <span class="menu-label">
+        <strong>백업</strong>
+        <small>소중한 기록 파일로 저장</small>
+      </span>
+      <span class="menu-arrow" aria-hidden="true">›</span>
     </button>
   </nav>
+
+  <p class="home-tip">🍒 중요한 자료는 가끔 백업해 주세요.</p>
 </section>
 
 <!-- ================= 납부관리 화면 ================= -->
@@ -151,6 +174,18 @@
           <span class="summary-card-label">이번달 순증감</span>
           <span id="summary-month-net" class="summary-card-value">0원</span>
         </div>
+      </div>
+
+      <div class="monthly-report-box">
+        <h3 class="monthly-report-title">🍒 회원 공유용 월별 정산표</h3>
+        <p class="monthly-report-desc">
+          현재 선택한 달의 입금·출금·납부 현황을 한 장의 이미지로 저장합니다.
+          저장한 이미지는 카카오톡으로 바로 보낼 수 있습니다.
+        </p>
+        <button id="summary-image-download-btn" class="btn-primary report-download-btn" type="button">
+          정산 이미지 저장
+        </button>
+        <p id="summary-image-status" class="report-status" aria-live="polite"></p>
       </div>
 
       <h3 class="summary-section-title">회원별 납부현황 (이 달)</h3>

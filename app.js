@@ -839,10 +839,300 @@ function renderSummaryScreen() {
   }
 }
 
+
+/**
+ * 캔버스에 둥근 사각형 경로를 만듭니다.
+ */
+function reportRoundRect(ctx, x, y, width, height, radius) {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + width, y, x + width, y + height, r);
+  ctx.arcTo(x + width, y + height, x, y + height, r);
+  ctx.arcTo(x, y + height, x, y, r);
+  ctx.arcTo(x, y, x + width, y, r);
+  ctx.closePath();
+}
+
+/**
+ * 긴 문장을 캔버스 폭에 맞춰 여러 줄로 표시합니다.
+ */
+function drawReportWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
+  const words = String(text).split(" ");
+  const lines = [];
+  let line = "";
+
+  words.forEach(function (word) {
+    const testLine = line ? line + " " + word : word;
+    if (ctx.measureText(testLine).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = testLine;
+    }
+  });
+
+  if (line) {
+    lines.push(line);
+  }
+
+  const visible = lines.slice(0, maxLines || lines.length);
+  visible.forEach(function (item, index) {
+    let output = item;
+    if (index === visible.length - 1 && lines.length > visible.length) {
+      while (ctx.measureText(output + "…").width > maxWidth && output.length > 1) {
+        output = output.slice(0, -1);
+      }
+      output += "…";
+    }
+    ctx.fillText(output, x, y + index * lineHeight);
+  });
+
+  return visible.length * lineHeight;
+}
+
+/**
+ * 월별 정산 이미지를 PNG로 만들어 휴대폰에 저장합니다.
+ * 외부 서버나 외부 라이브러리를 사용하지 않으므로 입력 자료가 밖으로 전송되지 않습니다.
+ */
+function downloadMonthlySummaryImage() {
+  ensureSummaryMonthState();
+
+  const statusEl = document.getElementById("summary-image-status");
+  const button = document.getElementById("summary-image-download-btn");
+
+  try {
+    button.disabled = true;
+    statusEl.classList.remove("error");
+    statusEl.textContent = "정산 이미지를 만들고 있습니다…";
+
+    const monthList = getMonthList();
+    const monthKey = monthList[summaryMonthIndex];
+    const monthLabel = formatMonthLabel(monthKey);
+    const members = getMembers();
+    const payments = getPaymentsForMonth(monthKey);
+    const ledger = getLedger();
+
+    let monthIncome = 0;
+    let monthExpense = 0;
+    const monthEntries = [];
+
+    ledger.forEach(function (entry) {
+      if (entry.date.indexOf(monthKey) === 0) {
+        monthEntries.push(entry);
+        if (entry.type === "income") {
+          monthIncome += entry.amount;
+        } else {
+          monthExpense += entry.amount;
+        }
+      }
+    });
+
+    const counts = { paid: 0, partial: 0, unpaid: 0, unknown: 0 };
+    members.forEach(function (member) {
+      const payment = payments[member.id] || { status: "unknown" };
+      if (counts[payment.status] !== undefined) {
+        counts[payment.status] += 1;
+      } else {
+        counts.unknown += 1;
+      }
+    });
+
+    // 휴대폰 세로 화면에 보기 좋은 9:16 크기
+    const canvas = document.createElement("canvas");
+    canvas.width = 1080;
+    canvas.height = 1920;
+    const ctx = canvas.getContext("2d");
+
+    if (!ctx) {
+      throw new Error("이미지 기능을 사용할 수 없는 브라우저입니다.");
+    }
+
+    // 부드러운 크림색 배경
+    const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    bg.addColorStop(0, "#F8DDE3");
+    bg.addColorStop(0.22, "#FFF8F0");
+    bg.addColorStop(1, "#FFFDF8");
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 상단 제목 영역
+    ctx.fillStyle = "#B2243A";
+    ctx.fillRect(0, 0, canvas.width, 320);
+
+    // 단순하고 큰 앵두 표시
+    ctx.fillStyle = "#FFFFFF";
+    ctx.beginPath();
+    ctx.arc(130, 118, 62, 0, Math.PI * 2);
+    ctx.arc(235, 118, 62, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = "#FFFFFF";
+    ctx.lineWidth = 17;
+    ctx.beginPath();
+    ctx.moveTo(162, 60);
+    ctx.lineTo(191, 16);
+    ctx.lineTo(231, 61);
+    ctx.stroke();
+
+    ctx.fillStyle = "#B9D9AF";
+    ctx.beginPath();
+    ctx.ellipse(175, 20, 48, 25, 0.42, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = '900 74px "Malgun Gothic", sans-serif';
+    ctx.fillText("앵두모임 월별 정산", 315, 112);
+    ctx.font = '900 50px "Malgun Gothic", sans-serif';
+    ctx.fillText(monthLabel, 320, 185);
+    ctx.font = '800 35px "Malgun Gothic", sans-serif';
+    ctx.fillText("회원 공유용 정산 안내", 320, 245);
+
+    // 금액 요약: 한 줄에 하나씩 크게 표시
+    const cards = [
+      { label: "이번 달 입금", value: monthIncome, color: "#426B3D", bg: "#E6F1E2", icon: "＋" },
+      { label: "이번 달 출금", value: monthExpense, color: "#9B263B", bg: "#F9DDE2", icon: "－" },
+      { label: "이번 달 순증감", value: monthIncome - monthExpense, color: "#701B2E", bg: "#FFF0D5", icon: "＝" },
+      { label: "현재 잔액", value: getBalance(), color: "#701B2E", bg: "#FFFFFF", icon: "₩" }
+    ];
+
+    let y = 370;
+    cards.forEach(function (card) {
+      reportRoundRect(ctx, 65, y, 950, 175, 30);
+      ctx.fillStyle = card.bg;
+      ctx.fill();
+      ctx.strokeStyle = "#E4C9C3";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      reportRoundRect(ctx, 95, y + 38, 96, 96, 25);
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fill();
+
+      ctx.fillStyle = card.color;
+      ctx.font = '900 50px "Malgun Gothic", sans-serif';
+      ctx.textAlign = "center";
+      ctx.fillText(card.icon, 143, y + 102);
+
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#5F4D49";
+      ctx.font = '900 41px "Malgun Gothic", sans-serif';
+      ctx.fillText(card.label, 225, y + 72);
+
+      ctx.fillStyle = card.color;
+      ctx.font = '900 52px "Malgun Gothic", sans-serif';
+      ctx.textAlign = "right";
+      ctx.fillText(formatMoney(card.value), 970, y + 135);
+      ctx.textAlign = "left";
+
+      y += 195;
+    });
+
+    // 납부현황은 회원 공유 이미지에서 제외합니다.
+
+    // 거래 내역: 납부현황을 제외하고 최대 8건까지 크게 표시
+    const entryTitleY = 1190;
+    ctx.fillStyle = "#701B2E";
+    ctx.font = '900 48px "Malgun Gothic", sans-serif';
+    ctx.fillText("이번 달 주요 거래", 65, entryTitleY);
+
+    reportRoundRect(ctx, 65, entryTitleY + 35, 950, 510, 28);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fill();
+    ctx.strokeStyle = "#E6D5CE";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    const sortedEntries = monthEntries
+      .slice()
+      .sort(function (a, b) {
+        return b.amount - a.amount;
+      })
+      .slice(0, 8);
+
+    if (sortedEntries.length === 0) {
+      ctx.fillStyle = "#766661";
+      ctx.font = '800 34px "Malgun Gothic", sans-serif';
+      ctx.fillText("이번 달에 입력된 장부 내역이 없습니다.", 105, entryTitleY + 125);
+    } else {
+      sortedEntries.forEach(function (entry, index) {
+        const rowY = entryTitleY + 92 + index * 55;
+        const sign = entry.type === "income" ? "+" : "-";
+        const color = entry.type === "income" ? "#426B3D" : "#9B263B";
+
+        ctx.fillStyle = "#665854";
+        ctx.font = '800 31px "Malgun Gothic", sans-serif';
+        ctx.fillText(entry.date.slice(5).replace("-", "/"), 100, rowY);
+
+        ctx.fillStyle = "#382A29";
+        ctx.font = '900 34px "Malgun Gothic", sans-serif';
+        const content = entry.content.length > 13 ? entry.content.slice(0, 13) + "…" : entry.content;
+        ctx.fillText(content, 225, rowY);
+
+        ctx.fillStyle = color;
+        ctx.font = '900 32px "Malgun Gothic", sans-serif';
+        ctx.textAlign = "right";
+        ctx.fillText(sign + formatMoney(entry.amount), 970, rowY);
+        ctx.textAlign = "left";
+      });
+    }
+
+    // 하단 문구
+    const now = new Date();
+    const createdText =
+      "생성일 " +
+      now.getFullYear() + "년 " +
+      (now.getMonth() + 1) + "월 " +
+      now.getDate() + "일";
+
+    ctx.fillStyle = "#6C5955";
+    ctx.font = '900 34px "Malgun Gothic", sans-serif';
+    ctx.textAlign = "center";
+    ctx.fillText("이번 달 정산 내역을 확인해 주세요.", canvas.width / 2, 1835);
+
+    ctx.fillStyle = "#8A7771";
+    ctx.font = '700 26px "Malgun Gothic", sans-serif';
+    ctx.fillText(createdText, canvas.width / 2, 1880);
+    ctx.textAlign = "left";
+
+    canvas.toBlob(function (blob) {
+      if (!blob) {
+        button.disabled = false;
+        statusEl.classList.add("error");
+        statusEl.textContent = "이미지 저장에 실패했습니다.";
+        return;
+      }
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "앵두모임_" + monthKey + "_세로형_월별정산.png";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      window.setTimeout(function () {
+        URL.revokeObjectURL(url);
+      }, 1000);
+
+      button.disabled = false;
+      statusEl.classList.remove("error");
+      statusEl.textContent = "세로형 정산 이미지가 저장되었습니다.";
+    }, "image/png");
+  } catch (error) {
+    console.error("[summary image] 생성 실패:", error);
+    button.disabled = false;
+    statusEl.classList.add("error");
+    statusEl.textContent = "이미지를 만들지 못했습니다. 다시 시도해주세요.";
+  }
+}
+
 /**
  * 결산 화면의 모든 버튼에 이벤트를 연결합니다. (앱 시작 시 한 번만 호출)
  */
 function initSummaryScreen() {
+  document.getElementById("summary-image-download-btn").addEventListener("click", downloadMonthlySummaryImage);
+
   document.getElementById("tab-monthly-btn").addEventListener("click", function () {
     switchSummaryTab("monthly");
   });
@@ -854,6 +1144,7 @@ function initSummaryScreen() {
     ensureSummaryMonthState();
     if (summaryMonthIndex > 0) {
       summaryMonthIndex -= 1;
+      document.getElementById("summary-image-status").textContent = "";
       renderSummaryMonthlyPanel();
     }
   });
@@ -862,6 +1153,7 @@ function initSummaryScreen() {
     const monthList = getMonthList();
     if (summaryMonthIndex < monthList.length - 1) {
       summaryMonthIndex += 1;
+      document.getElementById("summary-image-status").textContent = "";
       renderSummaryMonthlyPanel();
     }
   });
