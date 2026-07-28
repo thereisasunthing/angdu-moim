@@ -7,7 +7,7 @@
      (v1 -> v2) 그래야 사용자 휴대폰의 캐시가 새 파일로 교체됩니다.
    ============================================ */
 
-const CACHE_NAME = "angdu-moim-v1";
+const CACHE_NAME = "angdu-moim-v2";
 
 const FILES_TO_CACHE = [
   "./",
