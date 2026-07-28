@@ -1,0 +1,842 @@
+/* ============================================
+   앵두모임 - style.css
+   색상 토큰 / 타이포 규칙은 이 파일 상단에서만 관리합니다.
+   ============================================ */
+
+:root {
+  /* 색상 팔레트 (앵두색 계열) */
+  --color-cherry: #B0273A;       /* 앵두색 (메인) */
+  --color-cherry-dark: #8C1D2D;  /* 눌렸을 때 */
+  --color-white: #FFFFFF;
+  --color-gray-light: #F3F1EF;   /* 연회색 배경 */
+  --color-gray-line: #E3DFDC;    /* 구분선 */
+  --color-text: #2B2523;         /* 기본 글자색 (진한 갈색빛 검정, 눈부심 방지) */
+  --color-text-sub: #6B615C;
+
+  /* 상태 색상 */
+  --color-green-light: #E4F5E6;  /* 연초록 - 납부 */
+  --color-green-text: #2E7D46;
+  --color-yellow-light: #FDF3D3; /* 연노랑 - 일부납부 */
+  --color-yellow-text: #8A6A00;
+  --color-red-light: #FBE0E0;    /* 연빨강 - 미납 */
+  --color-red-text: #B0273A;
+  --color-gray-status: #ECEAE8; /* 미확인 */
+
+  /* 크기 */
+  --touch-min: 56px;
+  --radius: 16px;
+
+  /* 폰트: 시스템 한글 폰트만 사용 (오프라인 보장) */
+  --font-base: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden; /* 가로스크롤 금지 */
+}
+
+body {
+  font-family: var(--font-base);
+  background-color: var(--color-white);
+  color: var(--color-text);
+  font-size: 20px;       /* 본문 최소 20px */
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ============================================
+   화면 전환 구조
+   ============================================ */
+.screen {
+  display: none;
+  min-height: 100vh;
+  width: 100%;
+  flex-direction: column;
+}
+
+.screen.active {
+  display: flex;
+}
+
+/* ============================================
+   홈 화면
+   ============================================ */
+.home-header {
+  padding: 48px 24px 24px;
+  text-align: center;
+}
+
+.app-title {
+  font-size: 34px;        /* 제목 30px 이상 */
+  font-weight: 800;
+  color: var(--color-cherry);
+  margin: 0;
+}
+
+.app-sub {
+  font-size: 18px;
+  color: var(--color-text-sub);
+  margin: 8px 0 0;
+}
+
+.home-menu {
+  display: flex;
+  flex-direction: column;  /* 세로 배치 */
+  gap: 16px;
+  padding: 16px 20px 40px;
+}
+
+.menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 88px;
+  width: 100%;
+  background-color: var(--color-gray-light);
+  border: 2px solid var(--color-gray-line);
+  border-radius: var(--radius);
+  padding: 0 24px;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text);
+  text-align: left;
+  transition: background-color 0.12s ease, transform 0.05s ease;
+}
+
+.menu-btn:active {
+  background-color: var(--color-cherry);
+  color: var(--color-white);
+  transform: scale(0.98);
+}
+
+.menu-icon {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.menu-label {
+  flex: 1;
+}
+
+/* ============================================
+   하위 화면 공통 (납부관리 / 장부 / 결산 / 백업)
+   ============================================ */
+.sub-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 16px;
+  background-color: var(--color-cherry);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.back-btn {
+  min-height: var(--touch-min);
+  min-width: var(--touch-min);
+  background-color: transparent;
+  border: none;
+  color: var(--color-white);
+  font-size: 19px;
+  font-weight: 700;
+  padding: 0 12px;
+  border-radius: 12px;
+}
+
+.back-btn:active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.screen-title {
+  color: var(--color-white);
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.screen-body {
+  flex: 1;
+  padding: 24px 20px 40px;
+}
+
+.placeholder-text {
+  font-size: 19px;
+  color: var(--color-text-sub);
+  text-align: center;
+  margin-top: 60px;
+}
+
+/* ============================================
+   공용 버튼 스타일 (다음 단계부터 사용)
+   ============================================ */
+.btn-primary {
+  min-height: var(--touch-min);
+  width: 100%;
+  background-color: var(--color-cherry);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.btn-primary:active {
+  background-color: var(--color-cherry-dark);
+}
+
+/* 화면 너비가 넓은 경우(태블릿 등) 중앙 정렬 + 최대 폭 제한 */
+@media (min-width: 480px) {
+  .screen {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+}
+
+/* ============================================
+   납부관리 화면
+   ============================================ */
+
+.month-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 16px;
+  background-color: var(--color-gray-light);
+  border-bottom: 2px solid var(--color-gray-line);
+}
+
+.month-arrow {
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  background-color: var(--color-white);
+  border: 2px solid var(--color-gray-line);
+  border-radius: 12px;
+  font-size: 20px;
+  color: var(--color-cherry);
+  font-weight: 700;
+}
+
+.month-arrow:active {
+  background-color: var(--color-cherry);
+  color: var(--color-white);
+}
+
+.month-arrow:disabled {
+  color: var(--color-gray-line);
+  border-color: var(--color-gray-line);
+  background-color: var(--color-white);
+}
+
+.month-label {
+  font-size: 22px;
+  font-weight: 800;
+  min-width: 140px;
+  text-align: center;
+}
+
+.payment-body {
+  padding: 16px 16px 100px; /* 하단 납부율 바에 가려지지 않도록 여유 */
+}
+
+.payment-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background-color: var(--color-white);
+  border-bottom: 2px solid var(--color-gray-line);
+}
+
+.payment-search-wrap .form-input {
+  flex: 1;
+}
+
+.search-clear-btn {
+  min-height: var(--touch-min);
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 2px solid var(--color-gray-line);
+  background-color: var(--color-white);
+  color: var(--color-text-sub);
+  font-size: 17px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.search-clear-btn:active {
+  background-color: var(--color-gray-light);
+}
+
+.member-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.member-card {
+  background-color: var(--color-white);
+  border: 2px solid var(--color-gray-line);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.member-name {
+  font-size: 21px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.status-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 10px;
+}
+
+.status-btn {
+  min-height: var(--touch-min);
+  border-radius: 12px;
+  border: 2px solid var(--color-gray-line);
+  background-color: var(--color-white);
+  color: var(--color-text-sub);
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.status-btn:active {
+  transform: scale(0.97);
+}
+
+.status-btn.status-paid.active {
+  background-color: var(--color-green-light);
+  border-color: var(--color-green-text);
+  color: var(--color-green-text);
+}
+
+.status-btn.status-partial.active {
+  background-color: var(--color-yellow-light);
+  border-color: var(--color-yellow-text);
+  color: var(--color-yellow-text);
+}
+
+.status-btn.status-unpaid.active {
+  background-color: var(--color-red-light);
+  border-color: var(--color-red-text);
+  color: var(--color-red-text);
+}
+
+.status-btn.status-unknown.active {
+  background-color: var(--color-gray-status);
+  border-color: var(--color-text-sub);
+  color: var(--color-text-sub);
+}
+
+.payment-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--color-cherry);
+  color: var(--color-white);
+  text-align: center;
+  padding: 14px 16px;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.4;
+  z-index: 10;
+}
+
+@media (min-width: 480px) {
+  .payment-footer {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+}
+
+/* ============================================
+   모달 (일부납부 금액 입력)
+   ============================================ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal-box {
+  background-color: var(--color-white);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.modal-title {
+  font-size: 23px;
+  margin: 0 0 8px;
+}
+
+.modal-desc {
+  font-size: 18px;
+  color: var(--color-text-sub);
+  margin: 0 0 16px;
+}
+
+.modal-input {
+  width: 100%;
+  min-height: var(--touch-min);
+  font-size: 22px;
+  padding: 0 16px;
+  border: 2px solid var(--color-gray-line);
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.modal-btn {
+  flex: 1;
+  min-height: var(--touch-min);
+  border-radius: 12px;
+  font-size: 19px;
+  font-weight: 700;
+  border: 2px solid var(--color-gray-line);
+}
+
+.modal-btn-cancel {
+  background-color: var(--color-white);
+  color: var(--color-text-sub);
+}
+
+.modal-btn-confirm {
+  background-color: var(--color-cherry);
+  color: var(--color-white);
+  border-color: var(--color-cherry);
+}
+
+/* ============================================
+   장부 화면
+   ============================================ */
+
+.ledger-body {
+  padding: 20px 16px 110px;
+}
+
+.ledger-form {
+  background-color: var(--color-gray-light);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  margin-bottom: 24px;
+}
+
+.form-row {
+  margin-bottom: 14px;
+}
+
+.form-row label {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--color-text-sub);
+}
+
+.form-input {
+  width: 100%;
+  min-height: var(--touch-min);
+  font-size: 19px;
+  padding: 0 14px;
+  border: 2px solid var(--color-gray-line);
+  border-radius: 12px;
+  background-color: var(--color-white);
+  color: var(--color-text);
+}
+
+.type-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.type-btn {
+  min-height: var(--touch-min);
+  border-radius: 12px;
+  border: 2px solid var(--color-gray-line);
+  background-color: var(--color-white);
+  color: var(--color-text-sub);
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.type-btn.type-income.active {
+  background-color: var(--color-green-light);
+  border-color: var(--color-green-text);
+  color: var(--color-green-text);
+}
+
+.type-btn.type-expense.active {
+  background-color: var(--color-red-light);
+  border-color: var(--color-red-text);
+  color: var(--color-red-text);
+}
+
+.ledger-form-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.btn-secondary {
+  min-height: var(--touch-min);
+  flex: 1;
+  background-color: var(--color-white);
+  color: var(--color-text-sub);
+  border: 2px solid var(--color-gray-line);
+  border-radius: var(--radius);
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.ledger-form-buttons .btn-primary {
+  flex: 2;
+}
+
+.ledger-list-title {
+  font-size: 20px;
+  margin: 0 0 12px;
+}
+
+.ledger-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ledger-item {
+  background-color: var(--color-white);
+  border: 2px solid var(--color-gray-line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.ledger-item-top {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.ledger-date {
+  font-size: 16px;
+  color: var(--color-text-sub);
+  min-width: 44px;
+}
+
+.ledger-content-text {
+  flex: 1;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.ledger-amount {
+  font-size: 19px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.ledger-amount.income {
+  color: var(--color-green-text);
+}
+
+.ledger-amount.expense {
+  color: var(--color-red-text);
+}
+
+.ledger-item-bottom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ledger-memo-text {
+  font-size: 15px;
+  color: var(--color-text-sub);
+  flex: 1;
+}
+
+.ledger-balance-after {
+  font-size: 14px;
+  color: var(--color-text-sub);
+}
+
+.ledger-item-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.ledger-edit-btn,
+.ledger-delete-btn {
+  flex: 1;
+  min-height: 44px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  border: 2px solid var(--color-gray-line);
+  background-color: var(--color-white);
+  color: var(--color-text-sub);
+}
+
+.ledger-delete-btn {
+  color: var(--color-red-text);
+  border-color: var(--color-red-light);
+}
+
+.ledger-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--color-cherry);
+  color: var(--color-white);
+  text-align: center;
+  padding: 18px;
+  font-size: 21px;
+  font-weight: 800;
+  z-index: 10;
+}
+
+@media (min-width: 480px) {
+  .ledger-footer {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+}
+
+/* ============================================
+   결산 화면
+   ============================================ */
+
+.summary-body {
+  padding: 20px 16px 40px;
+}
+
+.summary-tab-toggle {
+  margin-bottom: 20px;
+}
+
+.tab-btn.active {
+  background-color: var(--color-cherry);
+  border-color: var(--color-cherry);
+  color: var(--color-white);
+}
+
+.summary-panel.hidden {
+  display: none;
+}
+
+.summary-month-selector {
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+}
+
+.summary-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.summary-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  border-radius: var(--radius);
+  border: 2px solid var(--color-gray-line);
+  background-color: var(--color-white);
+}
+
+.summary-card-label {
+  font-size: 18px;
+  color: var(--color-text-sub);
+  font-weight: 700;
+}
+
+.summary-card-value {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.summary-card.income .summary-card-value {
+  color: var(--color-green-text);
+}
+
+.summary-card.expense .summary-card-value {
+  color: var(--color-red-text);
+}
+
+.summary-card.net .summary-card-value {
+  color: var(--color-cherry);
+}
+
+.summary-section-title {
+  font-size: 20px;
+  margin: 0 0 12px;
+}
+
+.summary-member-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.summary-member-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--color-white);
+  border: 2px solid var(--color-gray-line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  gap: 10px;
+}
+
+.summary-member-row-overall {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.summary-member-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.summary-member-name {
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.summary-member-count {
+  font-size: 15px;
+  color: var(--color-text-sub);
+}
+
+.summary-member-bottom {
+  font-size: 15px;
+  color: var(--color-text-sub);
+  margin-top: 6px;
+}
+
+.status-badge {
+  font-size: 15px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.status-badge.status-paid {
+  background-color: var(--color-green-light);
+  color: var(--color-green-text);
+}
+
+.status-badge.status-partial {
+  background-color: var(--color-yellow-light);
+  color: var(--color-yellow-text);
+}
+
+.status-badge.status-unpaid {
+  background-color: var(--color-red-light);
+  color: var(--color-red-text);
+}
+
+.status-badge.status-unknown {
+  background-color: var(--color-gray-status);
+  color: var(--color-text-sub);
+}
+
+/* ============================================
+   백업 화면
+   ============================================ */
+
+.backup-body {
+  padding: 24px 16px 40px;
+}
+
+.backup-block {
+  background-color: var(--color-gray-light);
+  border-radius: var(--radius);
+  padding: 20px 18px;
+  margin-bottom: 20px;
+}
+
+.backup-block-title {
+  font-size: 21px;
+  margin: 0 0 10px;
+}
+
+.backup-desc {
+  font-size: 17px;
+  color: var(--color-text-sub);
+  line-height: 1.6;
+  margin: 0 0 16px;
+}
+
+.backup-desc strong {
+  color: var(--color-cherry);
+}
+
+.backup-status {
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  min-height: 24px;
+}
+
+.backup-status-success {
+  color: var(--color-green-text);
+}
+
+.backup-status-error {
+  color: var(--color-red-text);
+}
